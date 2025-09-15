@@ -6,7 +6,11 @@ using UnityEngine;
 public class SpawnController : MonoBehaviour
 {
     public static SpawnController SpawnControllerInstance;
-    [Header("---- Food Prefabs ----")]
+    [Header("----- Snake -----")]
+    [SerializeField] private GameObject snake1;
+    [SerializeField] private GameObject snake2;
+
+    [Header("----- Food Prefabs -----")]
     [SerializeField] private GameObject massGainerPrefab;
     [SerializeField] private GameObject massBurnerPrefab;
 
@@ -47,12 +51,23 @@ public class SpawnController : MonoBehaviour
         StartCoroutine(SpawnFoodRoutine());
         StartCoroutine(SpawnPowerUpRoutine());
     }
+
+    public void SpawnPlayerOne()
+    {
+        snake1.gameObject.SetActive(true);
+    }
+
+    public void SpawnPlayerTwo()
+    {
+        snake2.gameObject.SetActive(true);
+    }
     private IEnumerator SpawnPowerUpRoutine()
     {
         while (true)
         {
             if (currentPowerUp == null) SpawnPowerUp();
             yield return new WaitForSeconds(Random.Range(minFoodSpawnTime, maxFoodSpawnTime));
+            
         }
     }
     private IEnumerator SpawnFoodRoutine()

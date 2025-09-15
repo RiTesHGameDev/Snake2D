@@ -1,17 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using TMPro.Examples;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Snake : MonoBehaviour
 {
     [Header("----- MOVEMENT -----")]
     [SerializeField] private float moveSpeed; // Time between grid moves
+    private float originalMoveSpeed;
     private float moveTimer;
     private Vector2Int gridPosition;
 
     [Header("----- SNAKE PARTS -----")]
+    [SerializeField] private GameObject snakeHeadPrefab;
     [SerializeField] private GameObject snakeBodyPrefab;
     [SerializeField] private Transform bodyPart;
     [SerializeField] private Transform tailPart;
@@ -19,13 +24,14 @@ public class Snake : MonoBehaviour
     [SerializeField] private int removeBodyCount;
 
     [Header("----- PowerUp Settings -----")]
-    [SerializeField] private GameObject snakeShield;
+    [SerializeField] private GameObject shieldEffectPrefab;
     [SerializeField] private float shieldDuration = 5f;
     [SerializeField] private float speedBoostDuration = 5F;
     [SerializeField] private float scoreBoostDuration = 5f;
 
     [SerializeField] private PlayerController playerController;
     private List<Transform> snakeParts;
+    private List<GameObject> activeShields = new List<GameObject>();
     private bool growThisStep = false;
     private bool shrinkThisStep = false;
 
@@ -36,14 +42,15 @@ public class Snake : MonoBehaviour
     private bool hasShield = false;
     private bool hasSpeedBoost = false;
     private bool hasScoreBoost = false;
-
-    // Player identification
-    public bool isPlayer1 = true;
+    private Coroutine speedBoostCoroutine;
+   
 
     private void Awake()
     {
-        gridPosition = new Vector2Int(-20, 0);
+        //gridPosition = new Vector2Int(-20, 0);
+        gridPosition = Vector2Int.RoundToInt(transform.position);
         moveTimer = moveSpeed;
+        originalMoveSpeed = moveSpeed;
 
         playerController = GetComponent<PlayerController>();
         if (playerController == null)
@@ -60,15 +67,15 @@ public class Snake : MonoBehaviour
 
         if (bodyPart != null)
         {
-            snakeParts.Add (bodyPart);
+            snakeParts.Add(bodyPart);
         }
         if (tailPart != null)
         {
             tailPart.rotation = Quaternion.identity;
             snakeParts.Add(tailPart);
         }
-        screenHeight = Mathf.RoundToInt (Camera.main.orthographicSize * 2f);
-        screenWidth = Mathf.RoundToInt (Camera.main.aspect * screenHeight);
+        screenHeight = Mathf.RoundToInt(Camera.main.orthographicSize * 2f);
+        screenWidth = Mathf.RoundToInt(Camera.main.aspect * screenHeight);
     }
     private void Update()
     {
@@ -103,12 +110,13 @@ public class Snake : MonoBehaviour
         transform.position = new Vector3(gridPosition.x, gridPosition.y, 0);
 
         //Movement and Rotation Head
-        transform.position = nextHeadWorld;
+        //transform.position = nextHeadWorld;
+        snakeParts[0].position = nextHeadWorld;
         HeadRotation(moveDir);
         HandleSccreenWrapping();
 
         //move body Parts
-        for (int i = 1;i < snakeParts.Count;i++)
+        for (int i = 1; i < snakeParts.Count; i++)
         {
             Vector3 tempPos = snakeParts[i].position;
             snakeParts[i].position = prevPos;
@@ -143,8 +151,8 @@ public class Snake : MonoBehaviour
     }
     private void TailRotation()
     {
-        if(snakeParts.Count < 2) return;
-        
+        if (snakeParts.Count < 2) return;
+
         Transform tail = snakeParts[snakeParts.Count - 1];
         Transform beforeTail = snakeParts[snakeParts.Count - 2];
 
@@ -166,21 +174,24 @@ public class Snake : MonoBehaviour
             Debug.LogError("Body Prefab not assigned on Snake.");
             return;
         }
-        for (int i = 0;i < addBodyCount; i++ )
+        for (int i = 0; i < addBodyCount; i++)
         {
-            GameObject newBody = Instantiate(snakeBodyPrefab, pos , Quaternion.identity );
+            GameObject newBody = Instantiate(snakeBodyPrefab, pos, Quaternion.identity);
             snakeParts.Insert(snakeParts.Count - 1, newBody.transform);
 
             // Glow effect
             SpriteRenderer sr = newBody.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                    StartCoroutine(GlowEffect(sr, Color.white, 0.5f));
+            if (sr != null)
+                StartCoroutine(GlowEffect(sr, Color.white, 0.5f));
         }
+
+        UpdateShieldVisuals(); // Update shields after adding body parts
     }
+
     public void ShrinkBodyPartAt(Vector3 pos)
     {
         for (int i = 0; i < removeBodyCount; i++)
-        {    
+        {
             if (snakeParts.Count > 3)
             {
                 Transform lastBodyPart = snakeParts[snakeParts.Count - 3];
@@ -196,6 +207,44 @@ public class Snake : MonoBehaviour
                 }
             }
         }
+
+        UpdateShieldVisuals(); // Update shields after removing body parts
+    }
+    private void UpdateShieldVisuals()
+    {
+        if (hasShield)
+        {
+            // If shield is active, recreate visuals to match current snake parts
+            RemoveShieldVisuals();
+            CreateShieldVisuals();
+        }
+    }
+    private void CreateShieldVisuals()
+    {
+        RemoveShieldVisuals();
+
+    foreach (Transform part in snakeParts)
+    {
+        if (part != null && part.gameObject.scene.IsValid()) //  ensures it's in scene
+        {
+            GameObject shield = Instantiate(shieldEffectPrefab, part.position, Quaternion.identity);
+            shield.transform.SetParent(part, true); //  set parent after instantiation
+            activeShields.Add(shield);
+        }
+    }
+    }
+
+    private void RemoveShieldVisuals()
+    {
+        // Remove all shield visuals
+        foreach (GameObject shield in activeShields)
+        {
+            if (shield != null)
+            {
+                Destroy(shield);
+            }
+        }
+        activeShields.Clear();
     }
     private IEnumerator GlowEffect(SpriteRenderer sr, Color glowColor, float duration)
     {
@@ -226,7 +275,7 @@ public class Snake : MonoBehaviour
     }
     public void Shrink()
     {
-       shrinkThisStep = true;
+        shrinkThisStep = true;
     }
     private void HandleSccreenWrapping()
     {
@@ -268,12 +317,27 @@ public class Snake : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Food"))
+            return;
+
         // Check if the head hit one of its own body parts
         if (snakeParts.Contains(collision.transform) && collision.transform != snakeParts[0])
         {
-             SnakeDie();
-            
+            SnakeDie();
         }
+
+        Snake otherSnake = collision.GetComponent<Snake>();
+        if (otherSnake != null)
+        {
+            SnakeDie();
+            if (otherSnake.snakeParts.Contains(collision.transform) && collision.transform != otherSnake.snakeParts[0])
+            {
+                SnakeDie();
+                return;
+            }
+            return;
+        }
+
     }
 
     private void SnakeDie()
@@ -281,11 +345,9 @@ public class Snake : MonoBehaviour
         if (hasShield == false)
         {
             Debug.Log("Snake died!");
-
+            RemoveShieldVisuals(); // Clean up any shields
             enabled = false;
-
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
         }
         else
         {
@@ -297,11 +359,18 @@ public class Snake : MonoBehaviour
     public void ActivateShield()
     {
         StartCoroutine(ShieldDuration());
+        CreateShieldVisuals();
     }
 
     public void ActivateSpeedUp()
     {
-        StartCoroutine(SpeedBoostDuration());
+        // If there's already an active speed boost, stop it first
+        if (speedBoostCoroutine != null)
+        {
+            StopCoroutine(speedBoostCoroutine);
+        }
+
+        speedBoostCoroutine = StartCoroutine(SpeedBoostDuration());
     }
 
     public void ActivateScoreBoost()
@@ -312,20 +381,28 @@ public class Snake : MonoBehaviour
     private IEnumerator ShieldDuration()
     {
         hasShield = true;
+        CreateShieldVisuals(); // Ensure visuals are created
+
         yield return new WaitForSeconds(shieldDuration);
+
         hasShield = false;
+        RemoveShieldVisuals(); // Remove visuals when shield expire
     }
 
     private IEnumerator SpeedBoostDuration()
     {
         hasSpeedBoost = true;
-        float originalSpeed = moveSpeed;
-        moveSpeed *= 0.5f; // Faster movement (half the time per move)
 
+        // Apply speed boost (half the time between moves = faster movement)
+        moveSpeed = originalMoveSpeed * 0.5f;
+
+        // Wait for the duration
         yield return new WaitForSeconds(speedBoostDuration);
 
-        moveSpeed = originalSpeed;
+        // Restore original speed
+        moveSpeed = originalMoveSpeed;
         hasSpeedBoost = false;
+        speedBoostCoroutine = null;
     }
 
     private IEnumerator ScoreBoostDuration()
@@ -335,4 +412,3 @@ public class Snake : MonoBehaviour
         hasScoreBoost = false;
     }
 }
-

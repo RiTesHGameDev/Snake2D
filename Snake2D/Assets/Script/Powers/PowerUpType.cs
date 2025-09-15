@@ -4,5 +4,5 @@ public enum PowerUpType
 { 
 	SHIELD,
 	SCOREBOOST,
-	SPEEDUP
+	SPEEDBOOST
 }
