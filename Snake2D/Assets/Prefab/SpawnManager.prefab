@@ -44,6 +44,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3e03097d6730354198b6cbbe9f6cc1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  snake1: {fileID: 901741671878520258, guid: ee8f0e12588a2f34182889366fc04b05, type: 3}
+  snake2: {fileID: 3768510050240003325, guid: b58b9276ace138b4f9679ee19f9037f1, type: 3}
   massGainerPrefab: {fileID: 5769688008417249089, guid: 95b42e74bc770e04a8ccff405ffc3b7c, type: 3}
   massBurnerPrefab: {fileID: 5275581216204029936, guid: c64bdbaa040f7cf4f9e80c6fd36616f8, type: 3}
   powerUpPrefabs:

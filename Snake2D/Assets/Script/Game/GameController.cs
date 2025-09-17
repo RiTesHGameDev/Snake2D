@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     public static GameController gameControllerInstance { get; private set; }
-
+    [SerializeField] private ScoreController scoreController;
     [Header("Player Prefabs")]
     [SerializeField] private GameObject playerPrefab;  // Use same prefab for both players
     [SerializeField] private GameObject playerPrefab2; // Optional: different prefab for P2
@@ -16,6 +16,7 @@ public class GameController : MonoBehaviour
     private int playerCount = 1;
     private bool isLoading = false;
 
+    public bool isTwoPlayerMode = false;
     private void Awake()
     {
         // Singleton pattern
@@ -30,7 +31,19 @@ public class GameController : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    public void SetSinglePlayerMode()
+    {
+        isTwoPlayerMode = false;
+        if (scoreController != null)
+            scoreController.SetTwoPlayerMode(false);
+    }
 
+    public void SetTwoPlayerMode()
+    {
+        isTwoPlayerMode = true;
+        if (scoreController != null)
+            scoreController.SetTwoPlayerMode(true);
+    }
     public void SetPlayerCount(int count)
     {
         playerCount = Mathf.Clamp(count, 1, 2);
@@ -63,6 +76,11 @@ public class GameController : MonoBehaviour
     {
         if (scene.buildIndex == 1) // Game scene
         {
+            scoreController = FindObjectOfType<ScoreController>();
+            if (scoreController != null)
+            {
+                scoreController.SetTwoPlayerMode(isTwoPlayerMode);
+            }
             // Find spawn points if not already assigned
             if (spawnPoints == null || spawnPoints.Length == 0)
             {

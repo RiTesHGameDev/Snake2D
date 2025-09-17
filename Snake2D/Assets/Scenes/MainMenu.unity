@@ -635,7 +635,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 421924752}
   m_CullTransparentMesh: 1
---- !u!1 &426383690
+--- !u!1 &437661269
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -643,8 +643,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 426383692}
-  - component: {fileID: 426383691}
+  - component: {fileID: 437661271}
+  - component: {fileID: 437661270}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -652,30 +652,32 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &426383691
+--- !u!114 &437661270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426383690}
+  m_GameObject: {fileID: 437661269}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5bd2634f0f638ab4ba0d79a57886418c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 4134448469301549223, guid: ee8f0e12588a2f34182889366fc04b05, type: 3}
-  playerPrefab2: {fileID: 7543548121633767939, guid: b58b9276ace138b4f9679ee19f9037f1, type: 3}
+  scoreController: {fileID: 0}
+  playerPrefab: {fileID: 901741671878520258, guid: ee8f0e12588a2f34182889366fc04b05, type: 3}
+  playerPrefab2: {fileID: 3768510050240003325, guid: b58b9276ace138b4f9679ee19f9037f1, type: 3}
   spawnPoints:
   - {fileID: 7849534227220110249, guid: 4527e58917068574fb90cdac7b983789, type: 3}
   - {fileID: 375799184469320690, guid: 763f01e3acdb28e43b7b66d93f227861, type: 3}
---- !u!4 &426383692
+  isTwoPlayerMode: 0
+--- !u!4 &437661271
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426383690}
+  m_GameObject: {fileID: 437661269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}

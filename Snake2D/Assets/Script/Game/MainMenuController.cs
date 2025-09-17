@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuController : MonoBehaviour
 {
+    [Header("UI MAIN MENU")]
     [SerializeField] private Button playButton;
     [SerializeField] private Button quitButton;
     [SerializeField] private Button backButton;
@@ -21,6 +22,7 @@ public class MainMenuController : MonoBehaviour
         if (gameController == null)
         {
             GameObject controllerObj = new GameObject("GameController");
+            gameController = controllerObj.AddComponent<GameController>();
         }
         // If buttons aren't assigned in inspector, try to find them
         if (playButton == null)
@@ -50,14 +52,14 @@ public class MainMenuController : MonoBehaviour
     private void OnTwoPlayerClicked()
     {
         gameController?.SetPlayerCount(2);
+        gameController?.SetTwoPlayerMode();
         gameController?.LoadGameScene();
     }
 
     private void OnOnePlayerClicked()
     {
-        Debug.Log("One Player button clicked!");
-        if (gameController == null) Debug.LogError("GameController is NULL!");
         gameController?.SetPlayerCount(1);
+        gameController?.SetSinglePlayerMode();
         gameController?.LoadGameScene();
     }
 
