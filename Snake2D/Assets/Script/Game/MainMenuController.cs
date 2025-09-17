@@ -24,7 +24,6 @@ public class MainMenuController : MonoBehaviour
             GameObject controllerObj = new GameObject("GameController");
             gameController = controllerObj.AddComponent<GameController>();
         }
-        // If buttons aren't assigned in inspector, try to find them
         if (playButton == null)
             playButton = GameObject.Find("PlayButton").GetComponent<Button>();
         if (quitButton == null)
@@ -38,7 +37,6 @@ public class MainMenuController : MonoBehaviour
         if(playerOptionPanel == null)
             playerOptionPanel = GameObject.Find("PlayerOptionPanel");
 
-        // Add event listeners
         playButton.onClick.AddListener(OnPlayButtonClicked);
         quitButton.onClick.AddListener(OnQuitButtonClicked);
         backButton.onClick.AddListener(OnBackButtonClicked);
@@ -51,6 +49,7 @@ public class MainMenuController : MonoBehaviour
 
     private void OnTwoPlayerClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         gameController?.SetPlayerCount(2);
         gameController?.SetTwoPlayerMode();
         gameController?.LoadGameScene();
@@ -58,6 +57,7 @@ public class MainMenuController : MonoBehaviour
 
     private void OnOnePlayerClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         gameController?.SetPlayerCount(1);
         gameController?.SetSinglePlayerMode();
         gameController?.LoadGameScene();
@@ -65,16 +65,19 @@ public class MainMenuController : MonoBehaviour
 
     private void OnBackButtonClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         HidePlayerOptions();
     }
 
     private void OnPlayButtonClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         ShowPlayerOptions();
     }
 
     private void OnQuitButtonClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         Debug.Log("Quit button clicked!");
         #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;

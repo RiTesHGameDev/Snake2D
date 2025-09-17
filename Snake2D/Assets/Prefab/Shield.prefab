@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ba5946ea37e9d6749848b193a3318073, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.51320755, g: 0.9789798, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -98,13 +98,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c78bd9c7f291ece4bbee0d738964087c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shieldEffectPrefab: {fileID: 965870876921850228, guid: 90141d6ca8b01384a8c1f9bf59f6cd3f, type: 3}
   powerUptype: 0
   duration: 5
   lifeTime: 8
-  shieldDuration: 5
-  speedBoostDuration: 5
-  scoreBoostDuration: 5
 --- !u!61 &-4872414921483000972
 BoxCollider2D:
   m_ObjectHideFlags: 0
