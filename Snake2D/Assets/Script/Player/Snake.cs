@@ -379,8 +379,13 @@ public class Snake : MonoBehaviour
 
     public void SnakeDie()
     {
-        Debug.Log($"{gameObject.name} died! Position: {transform.position}");
+        if (hasShield)
+        {
+            Debug.Log($"{gameObject.name} was protected by shield!");
+            return;
+        }
 
+        Debug.Log($"{gameObject.name} died! Position: {transform.position}");
 
         gameObject.SetActive(false);
 
