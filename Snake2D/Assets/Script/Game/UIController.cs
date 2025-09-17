@@ -86,6 +86,7 @@ public class UIController : MonoBehaviour
 
     private void OnNoClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         confirmPanel.SetActive(false);
         menuPanel.SetActive(true);
     }
