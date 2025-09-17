@@ -1,17 +1,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using TMPro.Examples;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Snake : MonoBehaviour
 {
     [Header("----- MOVEMENT -----")]
     [SerializeField] private float moveSpeed; // Time between grid moves
+    private float originalMoveSpeed;
     private float moveTimer;
     private Vector2Int gridPosition;
 
     [Header("----- SNAKE PARTS -----")]
+    [SerializeField] private GameObject snakeHeadPrefab;
     [SerializeField] private GameObject snakeBodyPrefab;
     [SerializeField] private Transform bodyPart;
     [SerializeField] private Transform tailPart;
@@ -19,13 +24,18 @@ public class Snake : MonoBehaviour
     [SerializeField] private int removeBodyCount;
 
     [Header("----- PowerUp Settings -----")]
-    [SerializeField] private GameObject snakeShield;
+    [SerializeField] private GameObject shieldEffectPrefab;
     [SerializeField] private float shieldDuration = 5f;
     [SerializeField] private float speedBoostDuration = 5F;
     [SerializeField] private float scoreBoostDuration = 5f;
 
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private bool isPlayer1 = true;
+    public int playerNumber = 1;
+
     private List<Transform> snakeParts;
+    private List<GameObject> snakeOneActiveShields;
+    private List <GameObject> snakeTwoActiveShields;
     private bool growThisStep = false;
     private bool shrinkThisStep = false;
 
@@ -36,21 +46,22 @@ public class Snake : MonoBehaviour
     private bool hasShield = false;
     private bool hasSpeedBoost = false;
     private bool hasScoreBoost = false;
-
-    // Player identification
-    public bool isPlayer1 = true;
+    private Coroutine speedBoostCoroutine;
 
     private void Awake()
     {
-        gridPosition = new Vector2Int(-20, 0);
+        gridPosition = Vector2Int.RoundToInt(transform.position);
+
         moveTimer = moveSpeed;
+        originalMoveSpeed = moveSpeed;
 
         playerController = GetComponent<PlayerController>();
         if (playerController == null)
         {
             Debug.Log("playerController not found");
         }
-
+        snakeOneActiveShields = new List<GameObject>();
+        snakeTwoActiveShields = new List<GameObject>();
         //initialize snake with 3 parts
         snakeParts = new List<Transform>();
 
@@ -60,15 +71,15 @@ public class Snake : MonoBehaviour
 
         if (bodyPart != null)
         {
-            snakeParts.Add (bodyPart);
+            snakeParts.Add(bodyPart);
         }
         if (tailPart != null)
         {
             tailPart.rotation = Quaternion.identity;
             snakeParts.Add(tailPart);
         }
-        screenHeight = Mathf.RoundToInt (Camera.main.orthographicSize * 2f);
-        screenWidth = Mathf.RoundToInt (Camera.main.aspect * screenHeight);
+        screenHeight = Mathf.RoundToInt(Camera.main.orthographicSize * 2f);
+        screenWidth = Mathf.RoundToInt(Camera.main.aspect * screenHeight);
     }
     private void Update()
     {
@@ -103,12 +114,13 @@ public class Snake : MonoBehaviour
         transform.position = new Vector3(gridPosition.x, gridPosition.y, 0);
 
         //Movement and Rotation Head
-        transform.position = nextHeadWorld;
+        //transform.position = nextHeadWorld;
+        snakeParts[0].position = nextHeadWorld;
         HeadRotation(moveDir);
         HandleSccreenWrapping();
 
         //move body Parts
-        for (int i = 1;i < snakeParts.Count;i++)
+        for (int i = 1; i < snakeParts.Count; i++)
         {
             Vector3 tempPos = snakeParts[i].position;
             snakeParts[i].position = prevPos;
@@ -143,8 +155,8 @@ public class Snake : MonoBehaviour
     }
     private void TailRotation()
     {
-        if(snakeParts.Count < 2) return;
-        
+        if (snakeParts.Count < 2) return;
+
         Transform tail = snakeParts[snakeParts.Count - 1];
         Transform beforeTail = snakeParts[snakeParts.Count - 2];
 
@@ -166,26 +178,35 @@ public class Snake : MonoBehaviour
             Debug.LogError("Body Prefab not assigned on Snake.");
             return;
         }
-        for (int i = 0;i < addBodyCount; i++ )
+        for (int i = 0; i < addBodyCount; i++)
         {
-            GameObject newBody = Instantiate(snakeBodyPrefab, pos , Quaternion.identity );
+            GameObject newBody = Instantiate(snakeBodyPrefab, pos, Quaternion.identity);
             snakeParts.Insert(snakeParts.Count - 1, newBody.transform);
 
+            if (hasShield)
+            {
+                AddShieldToPart(newBody.transform);
+            }
             // Glow effect
             SpriteRenderer sr = newBody.GetComponent<SpriteRenderer>();
-                if (sr != null)
-                    StartCoroutine(GlowEffect(sr, Color.white, 0.5f));
+            if (sr != null)
+                StartCoroutine(GlowEffect(sr, Color.white, 0.5f));
         }
     }
+
     public void ShrinkBodyPartAt(Vector3 pos)
     {
         for (int i = 0; i < removeBodyCount; i++)
-        {    
+        {
             if (snakeParts.Count > 3)
             {
                 Transform lastBodyPart = snakeParts[snakeParts.Count - 3];
                 SpriteRenderer sr = lastBodyPart.GetComponent<SpriteRenderer>();
 
+                if (hasShield)
+                {
+                    RemoveShieldFromPart(lastBodyPart);
+                }
                 if (sr != null)
                     StartCoroutine(ShrinkFlashAndDestroy(lastBodyPart.gameObject, sr, Color.red, 0.5f));
                 else
@@ -194,6 +215,63 @@ public class Snake : MonoBehaviour
                     snakeParts.RemoveAt(snakeParts.Count - 1);
                     Destroy(lastBodyPart.gameObject);
                 }
+            }
+        }
+    }
+    private void CreateShieldVisuals()
+    {
+        // Ensure we start with a clean list for THIS snake
+        RemoveShieldVisuals();
+
+        foreach (Transform part in snakeParts)
+        {
+            AddShieldToPart(part);
+        }
+
+    }
+    private void AddShieldToPart(Transform part)
+    {
+        if (part != null && part.gameObject.scene.IsValid())
+        {
+            GameObject shield = Instantiate(shieldEffectPrefab, part.position, Quaternion.identity);
+            shield.transform.SetParent(part, true);
+
+            if (IsPlayer1())
+            {
+                snakeOneActiveShields.Add(shield);
+            }
+            else
+            {
+                snakeTwoActiveShields.Add(shield);
+            }
+        }
+    }
+    private void RemoveShieldVisuals()
+    {
+        foreach (Transform part in snakeParts)
+        {
+            foreach (Transform child in part)
+            {
+                if (child.CompareTag("Shield")) // assign a "Shield" tag to your shieldEffectPrefab
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+        }
+
+        snakeOneActiveShields.Clear();
+        snakeTwoActiveShields.Clear();
+    }
+    private void RemoveShieldFromPart(Transform part)
+    {
+        List<GameObject> activeShields = IsPlayer1() ? snakeOneActiveShields : snakeTwoActiveShields;
+
+        for (int i = activeShields.Count - 1; i >= 0; i--)
+        {
+            if (activeShields[i] != null && activeShields[i].transform.parent == part)
+            {
+                Destroy(activeShields[i]);
+                activeShields.RemoveAt(i);
             }
         }
     }
@@ -226,7 +304,7 @@ public class Snake : MonoBehaviour
     }
     public void Shrink()
     {
-       shrinkThisStep = true;
+        shrinkThisStep = true;
     }
     private void HandleSccreenWrapping()
     {
@@ -268,28 +346,52 @@ public class Snake : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // Check if the head hit one of its own body parts
+        if (collision.CompareTag("Food"))
+            return;
+
+        // 1. Self collision: head hits own body
         if (snakeParts.Contains(collision.transform) && collision.transform != snakeParts[0])
         {
-             SnakeDie();
-            
+            SnakeDie();
+            return;
+        }
+
+        // 2. Head-to-head collision: both die
+        Snake otherSnake = collision.GetComponent<Snake>();
+        if (otherSnake != null && otherSnake != this)
+        {
+            if (collision.transform == otherSnake.snakeParts[0])
+            {
+                SnakeDie();
+                otherSnake.SnakeDie();
+            }
+
+            return;
+        }
+
+        // 3. Head hits another snake's body
+        SnakeBody otherSnakeBody = collision.GetComponent<SnakeBody>();
+        if (otherSnakeBody != null && otherSnakeBody.GetParentSnake() != this)
+        {
+            Snake hitSnake = otherSnakeBody.GetParentSnake();
+            Debug.Log($"{gameObject.name} hit {hitSnake.gameObject.name}'s body. {hitSnake.gameObject.name} dies!");
+            hitSnake.SnakeDie();
+            return;
         }
     }
 
-    private void SnakeDie()
+    public void SnakeDie()
     {
-        if (hasShield == false)
+        Debug.Log($"{gameObject.name} died! Position: {transform.position}");
+
+        // Add visual feedback
+        gameObject.SetActive(false);
+
+        // Optional: destroy all body parts
+        foreach (Transform part in snakeParts)
         {
-            Debug.Log("Snake died!");
-
-            enabled = false;
-
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
-        }
-        else
-        {
-            Debug.Log("Shielded !");
+            if (part != transform)
+                Destroy(part.gameObject);
         }
 
     }
@@ -297,11 +399,19 @@ public class Snake : MonoBehaviour
     public void ActivateShield()
     {
         StartCoroutine(ShieldDuration());
+        hasShield = true;
+        CreateShieldVisuals();
     }
 
     public void ActivateSpeedUp()
     {
-        StartCoroutine(SpeedBoostDuration());
+        // If there's already an active speed boost, stop it first
+        if (speedBoostCoroutine != null)
+        {
+            StopCoroutine(speedBoostCoroutine);
+        }
+
+        speedBoostCoroutine = StartCoroutine(SpeedBoostDuration());
     }
 
     public void ActivateScoreBoost()
@@ -312,20 +422,28 @@ public class Snake : MonoBehaviour
     private IEnumerator ShieldDuration()
     {
         hasShield = true;
+        CreateShieldVisuals(); // Ensure visuals are created
+
         yield return new WaitForSeconds(shieldDuration);
+
         hasShield = false;
+        RemoveShieldVisuals(); // Remove visuals when shield expire
     }
 
     private IEnumerator SpeedBoostDuration()
     {
         hasSpeedBoost = true;
-        float originalSpeed = moveSpeed;
-        moveSpeed *= 0.5f; // Faster movement (half the time per move)
 
+        // Apply speed boost (half the time between moves = faster movement)
+        moveSpeed = originalMoveSpeed * 0.5f;
+
+        // Wait for the duration
         yield return new WaitForSeconds(speedBoostDuration);
 
-        moveSpeed = originalSpeed;
+        // Restore original speed
+        moveSpeed = originalMoveSpeed;
         hasSpeedBoost = false;
+        speedBoostCoroutine = null;
     }
 
     private IEnumerator ScoreBoostDuration()
@@ -334,5 +452,16 @@ public class Snake : MonoBehaviour
         yield return new WaitForSeconds(scoreBoostDuration);
         hasScoreBoost = false;
     }
+    public Transform GetSnakeparts(int index)
+    {
+        if (index >= 0 && index < snakeParts.Count)
+        {
+            return snakeParts[index];
+        }
+        return null;
+    }
+    public bool IsPlayer1()
+    {
+        return isPlayer1;
+    }
 }
-

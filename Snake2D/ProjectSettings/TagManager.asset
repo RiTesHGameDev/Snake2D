@@ -5,14 +5,17 @@ TagManager:
   serializedVersion: 2
   tags:
   - Food
+  - SpawnPoint
+  - Shield
+  - SnakeBody
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - food
   - Water
   - UI
-  - 
+  - Player
   - 
   - 
   - 
@@ -47,4 +50,7 @@ TagManager:
     locked: 0
   - name: Foreground
     uniqueID: 3701283825
+    locked: 0
+  - name: UI
+    uniqueID: 3384508003
     locked: 0

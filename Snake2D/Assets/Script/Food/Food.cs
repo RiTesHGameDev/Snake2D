@@ -4,7 +4,16 @@ using UnityEngine;
 
 public class Food : MonoBehaviour
 {
+    private ScoreController scoreController;
     [SerializeField] private FoodType foodtype;
+
+    private void Start()
+    {
+        if (scoreController == null)
+        {
+            scoreController = FindObjectOfType<ScoreController>();
+        }
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Player"))
@@ -12,9 +21,15 @@ public class Food : MonoBehaviour
             Snake snake = collision.GetComponent<Snake>();
             if (snake != null)
             {
-                if(foodtype == FoodType.MASS_GAINER)
+                int playerNumber = snake.IsPlayer1() ? 1 : 2;
+
+                if (foodtype == FoodType.MASS_GAINER)
                 {
                     snake.Grow();
+                    if (scoreController != null)
+                    {
+                        scoreController.IncreaseScore(playerNumber);
+                    }
                     Debug.Log("Snake and food collide");
                 }
                 if(foodtype == FoodType.MASS_BURNER)
