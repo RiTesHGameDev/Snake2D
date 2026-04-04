@@ -7,8 +7,8 @@ public class GameController : MonoBehaviour
     public static GameController gameControllerInstance { get; private set; }
     [SerializeField] private ScoreController scoreController;
     [Header("Player Prefabs")]
-    [SerializeField] private GameObject playerPrefab;  // Use same prefab for both players
-    [SerializeField] private GameObject playerPrefab2; // Optional: different prefab for P2
+    [SerializeField] private GameObject playerPrefab; 
+    [SerializeField] private GameObject playerPrefab2; 
 
     [Header("Spawn Points")]
     [SerializeField] private Transform[] spawnPoints;
@@ -74,14 +74,13 @@ public class GameController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.buildIndex == 1) // Game scene
+        if (scene.buildIndex == 1)
         {
             scoreController = FindObjectOfType<ScoreController>();
             if (scoreController != null)
             {
                 scoreController.SetTwoPlayerMode(isTwoPlayerMode);
             }
-            // Find spawn points if not already assigned
             if (spawnPoints == null || spawnPoints.Length == 0)
             {
                 GameObject[] spawnObjects = GameObject.FindGameObjectsWithTag("SpawnPoint");
@@ -136,7 +135,7 @@ public class GameController : MonoBehaviour
             Instantiate(playerPrefab, spawnPoints[0].position, spawnPoints[0].rotation)
                 .name = "Snake 1";
 
-            // Player 2 (can use same prefab or different one)
+            // Player 2
             GameObject prefabToUse = playerPrefab2 != null ? playerPrefab2 : playerPrefab;
             Instantiate(prefabToUse, spawnPoints[1].position, spawnPoints[1].rotation)
                 .name = "Snake 2";

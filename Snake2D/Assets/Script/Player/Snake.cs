@@ -114,7 +114,6 @@ public class Snake : MonoBehaviour
         transform.position = new Vector3(gridPosition.x, gridPosition.y, 0);
 
         //Movement and Rotation Head
-        //transform.position = nextHeadWorld;
         snakeParts[0].position = nextHeadWorld;
         HeadRotation(moveDir);
         HandleSccreenWrapping();
@@ -211,7 +210,6 @@ public class Snake : MonoBehaviour
                     StartCoroutine(ShrinkFlashAndDestroy(lastBodyPart.gameObject, sr, Color.red, 0.5f));
                 else
                 {
-                    // fallback if no sprite renderer
                     snakeParts.RemoveAt(snakeParts.Count - 1);
                     Destroy(lastBodyPart.gameObject);
                 }
@@ -220,7 +218,6 @@ public class Snake : MonoBehaviour
     }
     private void CreateShieldVisuals()
     {
-        // Ensure we start with a clean list for THIS snake
         RemoveShieldVisuals();
 
         foreach (Transform part in snakeParts)
@@ -252,7 +249,7 @@ public class Snake : MonoBehaviour
         {
             foreach (Transform child in part)
             {
-                if (child.CompareTag("Shield")) // assign a "Shield" tag to your shieldEffectPrefab
+                if (child.CompareTag("Shield")) 
                 {
                     Destroy(child.gameObject);
                 }
@@ -382,17 +379,22 @@ public class Snake : MonoBehaviour
 
     public void SnakeDie()
     {
+        if (hasShield)
+        {
+            Debug.Log($"{gameObject.name} was protected by shield!");
+            return;
+        }
+
         Debug.Log($"{gameObject.name} died! Position: {transform.position}");
 
-        // Add visual feedback
         gameObject.SetActive(false);
 
-        // Optional: destroy all body parts
         foreach (Transform part in snakeParts)
         {
             if (part != transform)
                 Destroy(part.gameObject);
         }
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 
     }
 
@@ -405,7 +407,6 @@ public class Snake : MonoBehaviour
 
     public void ActivateSpeedUp()
     {
-        // If there's already an active speed boost, stop it first
         if (speedBoostCoroutine != null)
         {
             StopCoroutine(speedBoostCoroutine);
@@ -422,12 +423,12 @@ public class Snake : MonoBehaviour
     private IEnumerator ShieldDuration()
     {
         hasShield = true;
-        CreateShieldVisuals(); // Ensure visuals are created
+        CreateShieldVisuals();
 
         yield return new WaitForSeconds(shieldDuration);
 
         hasShield = false;
-        RemoveShieldVisuals(); // Remove visuals when shield expire
+        RemoveShieldVisuals();
     }
 
     private IEnumerator SpeedBoostDuration()

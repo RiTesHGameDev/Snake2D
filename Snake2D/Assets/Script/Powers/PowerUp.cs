@@ -26,6 +26,7 @@ public class PowerUp : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        SoundController.SoundInstance.PlayPowerPickupSound();
         Snake snake = other.GetComponent<Snake>();
         if (snake != null)
         {

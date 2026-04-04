@@ -34,19 +34,19 @@ public class PlayerController : MonoBehaviour
     }
     public void HandlePlayerInput()
     {
-        if (Input.GetKeyDown(moveUp) && moveDirection.y != -1)
+        if (Input.GetKey(moveUp) && moveDirection.y != -1)
         {
             moveDirection = new Vector2Int(0, 1);
         }
-        if (Input.GetKeyDown(moveDown) && moveDirection.y != 1)
+        if (Input.GetKey(moveDown) && moveDirection.y != 1)
         {
             moveDirection = new Vector2Int(0, -1);
         }
-        if (Input.GetKeyDown(moveLeft) && moveDirection.x != 1)
+        if (Input.GetKey(moveLeft) && moveDirection.x != 1)
         {
             moveDirection = new Vector2Int(-1, 0);
         }
-        if (Input.GetKeyDown(moveRight) && moveDirection.x != -1)
+        if (Input.GetKey(moveRight) && moveDirection.x != -1)
         {
             moveDirection = new Vector2Int(1, 0);
         }

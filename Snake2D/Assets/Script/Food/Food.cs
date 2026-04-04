@@ -25,6 +25,7 @@ public class Food : MonoBehaviour
 
                 if (foodtype == FoodType.MASS_GAINER)
                 {
+                    SoundController.SoundInstance.PlayFoodPickupSound();
                     snake.Grow();
                     if (scoreController != null)
                     {
@@ -34,18 +35,15 @@ public class Food : MonoBehaviour
                 }
                 if(foodtype == FoodType.MASS_BURNER)
                 {
+                    SoundController.SoundInstance.PlayFoodPickupSound();
                     snake.Shrink();
                     Debug.Log("oops !Snake lenth decreased !");
                 }
             }
-
-            // Notify SpawnController
             if (SpawnController.SpawnControllerInstance != null)
             {
                 SpawnController.SpawnControllerInstance.FoodEaten();
             }
-
-            // Destroy this food object
             Destroy(gameObject);
         }
     }

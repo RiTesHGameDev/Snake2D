@@ -20,7 +20,6 @@ public class UIController : MonoBehaviour
 
     private void Awake()
     {
-        // Assign listeners
         pauseButton.onClick.AddListener(TogglePause);
         resumeButton.onClick.AddListener(OnResumeClicked);
         restartButton.onClick.AddListener(OnRestartClicked);
@@ -28,13 +27,14 @@ public class UIController : MonoBehaviour
         yesButton.onClick.AddListener(OnYesClicked);
         noButton.onClick.AddListener(OnNoClicked);
 
-        // Start hidden
+
         menuPanel.SetActive(false);
         confirmPanel.SetActive(false);
     }
 
     private void TogglePause()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         isPaused = !isPaused;
         if (isPaused)
             PauseGame();
@@ -58,17 +58,20 @@ public class UIController : MonoBehaviour
 
     private void OnResumeClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         ResumeGame();
     }
 
     private void OnRestartClicked()
     {
-        Time.timeScale = 1f; // Reset time before reloading
+        SoundController.SoundInstance.PlayButtonClick();
+        Time.timeScale = 1f; 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void OnMainMenuClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         // Show confirmation panel
         menuPanel.SetActive(false);
         confirmPanel.SetActive(true);
@@ -76,12 +79,14 @@ public class UIController : MonoBehaviour
 
     private void OnYesClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");  // Replace with your main menu scene name
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void OnNoClicked()
     {
+        SoundController.SoundInstance.PlayButtonClick();
         confirmPanel.SetActive(false);
         menuPanel.SetActive(true);
     }
